@@ -8,6 +8,7 @@ const App = () => <div>
 const HookSwitcher = () => {
 
     const [ color, setColor ] = useState('white')
+
     return (
         <div style={{ padding: '10px', backgroundColor: color }}>
             <button onClick={()=>setColor('black')}>Dark</button>
