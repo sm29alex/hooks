@@ -48,8 +48,7 @@ const HookCounter = ( {value} ) => {
 
     useEffect(
         ()  => { 
-            console.log('hook effect up');
-            return () => console.log('hook effect down'); 
+            return () => console.log('hook effect down');
         }
         , [ value ]
     )
@@ -79,7 +78,8 @@ const Notification = () => {
     )
 }
 
-const getPlanet = (id) => { 
+const getPlanet = (id) => {
+    console.log(`${id}`)
     return fetch(`https://swapi.co/api/planets/${id}/`)
             .then( res => res.json() )
             .then( data => data );
@@ -123,7 +123,7 @@ const usePlanetInfo = (id) => {
     return useRequest(request);
 }
 
-const PlanetInfo = (id) => {
+const PlanetInfo = ({id}) => {
 
     const { data, loading, error } = usePlanetInfo(id);
 
