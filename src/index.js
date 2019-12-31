@@ -1,35 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, Component, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 
-const App = () => <div>
-    <HookSwitcher />
-</div>
+const App = () => {
 
-const HookSwitcher = () => {
+    const [value,setValue] = useState(1);
+    const [visible, setVisible] = useState(true);
 
-    const [ color, setColor ] = useState('white')
-    const [ fontSize, setFontSize ] = useState(14);
+    if (visible) {
+        return (
+            <div>
+                <button onClick={ () => setValue( (value) => value + 1 ) }>Increment</button>
+                <button onClick={ () => setVisible(false) }>Hide</button>
+                {/* <ClassCounter value={value} /> */}
+                {/* <HookCounter value={value} /> */}
+                {/* <Notification /> */}
+                <PlanetInfo id={value} />
+            </div>
+        )
+    } else {
+        return <button onClick={ () => setVisible(true) }>Show</button>
+    }
+};
+
+class ClassCounter extends Component {
+
+    componentDidMount() {
+        console.log('mount');
+    }
+
+    componentDidUpdate() {
+        console.log('update');
+    }
+
+    componentWillUnmount() {
+        console.log('unmount');
+    }
+
+    render(){
+        
+        return (
+            <p>{ this.props.value }</p>
+        );
+    }
+}
+
+const HookCounter = ( {value} ) => {
+
+    useEffect(
+        ()  => { 
+            console.log('hook effect up');
+            return () => console.log('hook effect down'); 
+        }
+        , [ value ]
+    )
+
+    useEffect( () => console.log('* component did mount ') , []);
+    useEffect( () => console.log('* component did update '));
+    useEffect( () => () => console.log('* component will unmount '), []);
+
+    return <p>{value}</p>
+}
+
+const Notification = () => {
+
+    const [ visible, setVisible ] = useState(true);
+    useEffect(
+        () => { 
+            const timeOut = setTimeout(() => setVisible(false), 5000);
+            return () => clearTimeout(timeOut); 
+        }
+        , []
+    )
 
     return (
-        <div style={{ padding: '10px', backgroundColor: color, fontSize: `${fontSize}px` }}>
-            <button 
-                onClick={()=>setColor('black')}>
-                Dark
-            </button>
-            <button 
-                onClick={()=>setColor('white')}>
-                Light
-            </button>
-            <button
-                onClick={() => setFontSize( (s) => s+1 )}>
-                Increment Size
-            </button>
-            <button
-                onClick={() => setFontSize( (s) => s-1 )}>
-                Decrement Size
-            </button>
+        <div>
+            { visible && <p>Notification</p> }
         </div>
     )
+}
+
+const getPlanet = (id) => fetch(`https://swapi.co/api/planets/${id}`)
+            .then( res => res.json() )
+            .then( data => data );
+
+
+const useRequest = (request) => {
+    const [dataState, setDataState] = useState(null);
+    useEffect(
+        () => {
+            let canseled = false;
+            request().then( data => !canseled && setDataState(data) );
+            return () => canseled = true;
+        } 
+        , [ request ] );
+    
+    return dataState;
+
+}
+
+const usePlanetInfo = (id) => {
+    const request = useCallback(() => getPlanet(id), [ id ]);
+    return useRequest(request);
+}
+
+const PlanetInfo = (id) => {
+    const data = usePlanetInfo(id);
+    return <div>{id} -- {data && data.name}</div>
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
